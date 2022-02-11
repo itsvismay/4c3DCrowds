@@ -5,9 +5,11 @@ cmake_minimum_required(VERSION 3.11-3.18)
 project(main)
 
 add_executable(testParticles testParticles.cpp)
+add_executable(rods 4c3D.cpp)
 
 # We need hello.h and the hello library
 target_link_libraries(testParticles PRIVATE hello polyscope)
+target_link_libraries(rods PRIVATE hello polyscope)
 
 # Tell C++ compiler to use C++20 features. We don't actually use any of them.
 target_compile_features(testParticles PUBLIC cxx_std_20)
