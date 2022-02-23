@@ -30,9 +30,7 @@ a1KE
 %% psi(S) - L:(RS - F)
 [F, Fblocks] = makeF(Q,Q,1);
 [R, Rblocks, Sf, Sfblocks] = makeRS(Fblocks);
-[Sq, Sqblocks] = makeS(Q,1);
-sum(sum(F - R*Sq));
-psi1 = Psi(Sqblocks);
+psi1 = Psi(Sf, Q, 1);
 psi1
 
 
@@ -54,13 +52,13 @@ function[F, Fblocks] = makeF(Qn, Q0,i)
     % A - F*A should be 0
 end
 %% Compute Psi(KE) from strains
-function [e] = Psi(Sblocks)
-    e =0;
-    m = 1; %hard coded masses
-    for i=1:size(Sblocks,2)
-        S = Sblocks{i};
-        e = e + 0.5*m*(S(1,1)^2 + S(2,2)^2 + S(3,3)^2)/S(4,4);
-    end
+function [e] = Psi(S, Q, i)
+    m = 1; % constant mass
+    q_i = Q(:, i); %4*nodes
+    dX = q_i(5:end) - q_i(1:end -4);
+    dy = S*dX;
+    dy = reshape(dy, 4, numel(q_i)/4-1)';
+    e = 0.5*m*sum(sum(dy(:, 1:3).*dy(:,1:3),2)./dy(:,4)); %kinetic energy
 end
 
 %% Solve procrustes for 4x4 R
