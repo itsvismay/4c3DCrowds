@@ -7,6 +7,7 @@ project(
     VERSION 0.1
     DESCRIPTION "Built with VSCode")
 
+add_subdirectory(../../../source/eigen-3.4.0/ Eigen3)
 add_subdirectory(../external/polyscope polyscope)
 add_subdirectory(../external/libigl libigl)
 

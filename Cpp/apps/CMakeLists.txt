@@ -3,6 +3,7 @@
 cmake_minimum_required(VERSION 3.11-3.18)
 
 project(main)
+#set(Eigen3_DIR )
 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
