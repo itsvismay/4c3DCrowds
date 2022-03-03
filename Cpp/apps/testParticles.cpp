@@ -316,7 +316,6 @@ void initScene1(ParticleSystem& ps, int len, int wid, int hgt, float radius){
 }
 
 int main(int, char**) {
-
     // Initialize polyscope, creating graphics contexts and constructing a window.
     // Should be called exactly once.
     polyscope::init();

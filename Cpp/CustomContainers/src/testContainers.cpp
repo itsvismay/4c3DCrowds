@@ -7,7 +7,7 @@ int main(){
 
 	LLNode<double> one = LLNode<double>(1);
 	LLNode<double> two = LLNode<double>(2.3);
-	LLNode<int> three = LLNode<int>(3);
+	LLNode<double> three = LLNode<double>(3);
 	LLNode<double> four = LLNode<double>(4);
 	LLNode<double> five = LLNode<double>(5);
 	LLNode<double> six = LLNode<double>(6);
