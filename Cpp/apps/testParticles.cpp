@@ -2,6 +2,7 @@
 #include "polyscope/polyscope.h"
 #include "polyscope/point_cloud.h"
 #include <Eigen/Core>
+#include "SpatialHash.h"
 
 float h = 1.0f/60.0f;
 Eigen::Vector3f grav(0, -10.0f,0);
@@ -23,138 +24,6 @@ struct ParticleSystem
   std::vector<Eigen::Vector3f> vel;
   std::vector<float> mass;
   std::vector<float> rad;
-
-};
-
-//64 bit return value should help
-inline size_t hash(Eigen::Vector3f &p, float invGridSpacing, const int n) {
-
-    int ix = (unsigned int)((p[0]) *invGridSpacing);
-    int iy = (unsigned int)((p[1]) *invGridSpacing);
-    int iz = (unsigned int)((p[2]) *invGridSpacing);
-    return (unsigned int)((ix * 92837111) ^ (iy * 689287499) ^ (iz * 83492791)) % n;
-}
-
-//64 bit return value should help
-std::tuple<int, int, int> xyzhash(Eigen::Vector3f &p) {
-
-     float px = p[0];
-      //get xcell
-      int xcell = floor((px - -10)/cellSize);
-      float py = p[1];
-      //get ycell
-      int ycell = floor((py - -1)/cellSize);
-      float pz = p[2];
-      //get zcell
-      int zcell = floor((pz - -10)/cellSize);
-
-      std::tuple<int, int, int> xyzcells{xcell, ycell, zcell};
-      return xyzcells;
-}
-
-void findNeighbors(std::vector<Eigen::Vector3f>& pos){
-  SpatialHash.clear();
-  //HASH dimensions
-  //-10 to 10 on x
-  // -1 to 20 on y
-  // -10 to 10 on z
-
-  for(int i=0; i<pos.size(); i++){
-      std::tuple<int, int, int> xyzcells = xyzhash(pos[i]);
-      std::map<std::tuple<int, int, int>, std::vector<int>>::iterator it = SpatialHash.find(xyzcells);
-      if(it == SpatialHash.end()){
-        std::vector<int> valu; valu.push_back(i);
-        SpatialHash.insert(std::make_pair(xyzcells, valu));
-      }else{
-        it->second.push_back(i);
-      }
-  }
-}
-
-struct Hash{
-  int size=307110;
-
-  int* first = new int[307110];
-  int* marks = new int[307110];
-  int currentMark = 0;
-
-  int* next;
-  int* firstNeighbor;
-	std::vector<int> neighbors;
-  float origx = -100;
-  float origy = -1;
-  float origz = -100;
-  Hash(int maxParticles){
-    this->next = new int[maxParticles];
-    this->firstNeighbor = new int[maxParticles + 1];
-    this->neighbors.resize(10 * maxParticles);
-
-  }; 
-  void findNeighbors(std::vector<Eigen::Vector3f>& pos){
-    this->currentMark++;
-		for (int i = 0; i < pos.size(); i++) {
-			float px = pos[i][0];
-			float py = pos[i][1];
-      float pz = pos[i][2];
-			
-			int gx = floor((px - origx) * invGridSpacing);
-			int gy = floor((py - origy) * invGridSpacing);
-			int gz = floor((pz - origz) * invGridSpacing);
-			
-			int h = (abs((gx * 92837111) ^ (gy * 689287499) ^ (gz * 83492791))) % this->size;
-						
-			if (this->marks[h] != this->currentMark) {				
-				this->marks[h] = this->currentMark;
-				this->first[h] = -1;
-			}
-
-			this->next[i] = this->first[h];
-			this->first[h] = i;
-		}
-		
-		// collect neighbors
-		
-		this->neighbors.clear();
-
-		float h2 = (1.0/invGridSpacing)*(1.0/invGridSpacing);
-
-		for (int i = 0; i < pos.size(); i++) {
-			this->firstNeighbor[i] = this->neighbors.size();
-			float px = pos[i][0];
-			float py = pos[i][1];
-      float pz = pos[i][2];
-			
-			int gx = floor((px - origx) * invGridSpacing);
-			int gy = floor((py - origy) * invGridSpacing);
-			int gz = floor((pz - origz) * invGridSpacing);
-						
-			int x, y;
-			
-			for (x = gx - 1; x <= gx + 1; x++) {
-				for (y = gy - 1; y <= gy + 1; y++) {
-						
-					int h = (abs((gx * 92837111) ^ (gy * 689287499) ^ (gz * 83492791))) % this->size;
-
-					if (this->marks[h] != this->currentMark) 
-						continue;
-				
-					int id = this->first[h];
-					while (id >= 0) 
-					{
-						float dx = pos[id][0] - px;
-						float dy = pos[id][1] - py;
-            float dz = pos[id][2] - py;
-						
-						if ((dx * dx + dy * dy + dz*dz )< h2) 
-							neighbors.push_back(id);
-
-						id = this->next[id];						
-					}
-				}
-			}
-		}
-		firstNeighbor[pos.size()] = neighbors.size();
-  }
 
 };
 

@@ -15,7 +15,7 @@ add_executable(testARAP testARAP.cpp)
 # We need hello.h and the hello library
 target_include_directories(testARAP PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../external/libigl/include")
 
-target_link_libraries(testParticles PRIVATE hello polyscope Eigen3::Eigen)
+target_link_libraries(testParticles PRIVATE hello spatialHash polyscope Eigen3::Eigen)
 target_link_libraries(rods PRIVATE hello polyscope Eigen3::Eigen)
 target_link_libraries(testARAP hello polyscope Eigen3::Eigen)
 

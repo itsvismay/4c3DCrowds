@@ -12,7 +12,7 @@ struct Scene{
 };
 
 
-void mySubroutine(int axes, Scene& scene, Eigen::MatrixXd& nodes, polyscope::CurveNetwork* pcn) {
+void mySubroutine(int axes, Scene& scene, Eigen::MatrixXd& nodes, polyscope::CurveNetwork* pcn) { 
   // change the render frame
   switch (axes)
   {
