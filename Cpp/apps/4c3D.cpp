@@ -1,43 +1,75 @@
 #include <iostream>
 #include "polyscope/polyscope.h"
 #include "polyscope/point_cloud.h"
-#include "hello.h"
+#include "polyscope/curve_network.h"
+
+#include <Eigen/Core>
+
+struct Scene{
+ Eigen::MatrixXd q; // rows = all nodes for all agents, columns = x,y,z,t
+ std::vector<std::array<int, 2>> edges;
+ Eigen::VectorXi Agents;
+};
 
 
-// Parameters which we will set in the callback UI.
-int nPts = 2000;
-float anotherParam = 3.14;
-
-void mySubroutine() {
-
-  // do something useful...
-  std::cout<<"Running subrouting"<<std::endl;
-
+void mySubroutine(int axes, Scene& scene, Eigen::MatrixXd& nodes, polyscope::CurveNetwork* pcn) { 
+  // change the render frame
+  switch (axes)
+  {
+  case 012:
+    nodes.col(0) = scene.q.col(0);
+    nodes.col(1) = scene.q.col(1);
+    nodes.col(2) = scene.q.col(2);
+    pcn->updateNodePositions(nodes);
+    break;
+  case 013:
+    nodes.col(0) = scene.q.col(0);
+    nodes.col(1) = scene.q.col(1);
+    nodes.col(2) = scene.q.col(3);
+    pcn->updateNodePositions(nodes);
+    break;
+  case 023:
+    nodes.col(0) = scene.q.col(0);
+    nodes.col(1) = scene.q.col(2);
+    nodes.col(2) = scene.q.col(3);
+    pcn->updateNodePositions(nodes);
+    break;
+  case 123:
+    nodes.col(0) = scene.q.col(1);
+    nodes.col(1) = scene.q.col(2);
+    nodes.col(2) = scene.q.col(3);
+    pcn->updateNodePositions(nodes);
+    break;
+  default:
+    break;
+  }
+  
 }
 
-// Your callback functions
-void myCallback() {
+//Setup Test Curves
+void setupTestCurves(Scene& scene){
 
-  // Since options::openImGuiWindowForUserCallback == true by default, 
-  // we can immediately start using ImGui commands to build a UI
+  double revolutions = 0.5;
+  int numNodes = 40;
+  int numAgents = 1;
+  scene.q.resize(numNodes*numAgents, 4);
+  scene.Agents.resize(numNodes*numAgents);
+  
+  //For each agent
+  //For num nodes, create from t=0..end inclusive, a set of points
+  for(int a=1; a<numAgents+1; a++){
+    for(int i=0; i<numNodes; i++){
+      double thetai = i*(2*3.14159*revolutions - 0)/(numNodes-1);
+      scene.q(a*i, 0) = cos(thetai);
+      scene.q(a*i, 1) = sin(thetai);
+      scene.q(a*i, 2) = 0;  
+      scene.q(a*i, 3) = i*(10.0 - 0)/(numNodes-1);
+      scene.Agents(a*i) = a;
+      if(i<numNodes-1)
+        scene.edges.push_back({i,i+1});
+    }
+  }  
 
-  ImGui::PushItemWidth(100); // Make ui elements 100 pixels wide,
-                             // instead of full width. Must have 
-                             // matching PopItemWidth() below.
-
-  ImGui::InputInt("num points", &nPts);             // set a int variable
-  ImGui::InputFloat("param value", &anotherParam);  // set a float variable
-
-  if (ImGui::Button("run subroutine")) {
-    // executes when button is pressed
-    mySubroutine();
-  }
-  ImGui::SameLine();
-  if (ImGui::Button("hi")) {
-    polyscope::warning("hi");
-  }
-
-  ImGui::PopItemWidth();
 }
 
 int main(int, char**) {
@@ -47,19 +79,41 @@ int main(int, char**) {
     polyscope::init();
     polyscope::options::programName = "PBD Particles Test";
 
-    // Specify the callback
-    polyscope::state::userCallback = myCallback;
 
-    // Register a structure
-    std::vector<glm::vec3> points;
-    for (int i = 0; i < nPts; i++) {
-      points.push_back(
-          glm::vec3{ polyscope::randomUnit(), 
-                    polyscope::randomUnit(), 
-                    polyscope::randomUnit()
-                    });
-    }
-    polyscope::registerPointCloud("my point cloud", points);
+    // Create a structure
+    Scene scene;
+    setupTestCurves(scene);
+    Eigen::MatrixXd nodes = Eigen::MatrixXd::Zero(scene.q.rows(),3);
+    nodes.col(0) = scene.q.col(0);
+    nodes.col(1) = scene.q.col(1);
+    nodes.col(2) = scene.q.col(2);
+    
+    // Register polyscope structure
+    // Add the curve network
+    polyscope::CurveNetwork* pcn = polyscope::registerCurveNetwork("my network", nodes, scene.edges);
+
+    // Specify the callback
+    polyscope::state::userCallback = [&](){
+      // Since options::openImGuiWindowForUserCallback == true by default, 
+      // we can immediately start using ImGui commands to build a UI
+      ImGui::PushItemWidth(100); // Make ui elements 100 pixels wide,
+      if (ImGui::Button("XYZ")) {
+        // executes when button is pressed
+        mySubroutine(012, scene, nodes, pcn);
+      }
+      if (ImGui::Button("XYT")) {
+        // executes when button is pressed
+        mySubroutine(013, scene, nodes, pcn);
+      }
+      if (ImGui::Button("YZT")) {
+        // executes when button is pressed
+        mySubroutine(123, scene, nodes, pcn);
+      }
+      if (ImGui::Button("XZT")) {
+        // executes when button is pressed
+        mySubroutine(023, scene, nodes, pcn);
+      }
+    };
 
     // Give control to the polyscope gui
     polyscope::show();

@@ -2,15 +2,15 @@
 # so let's require it now.
 cmake_minimum_required(VERSION 3.11-3.18)
 
-project(CustomContainers)
+project(spatialHash)
 
-add_executable(CustomContainers src/testContainers.cpp)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
+add_library(spatialHash INTERFACE)
 
 # PUBLIC needed to make both hello.h and hello library available elsewhere in project
 target_include_directories(${PROJECT_NAME}
-    PUBLIC ${PROJECT_SOURCE_DIR}/include)
-
-target_link_libraries(CustomContainers)
+    PUBLIC INTERFACE ${PROJECT_SOURCE_DIR}/include)
 
 # Tell compiler to use C++20 features. The code doesn't actually use any of them.
-target_compile_features(CustomContainers PUBLIC cxx_std_20)
+# target_compile_features(spatialHash PUBLIC cxx_std_20)

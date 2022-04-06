@@ -13,7 +13,7 @@ z = 0*theta +  rand(numel(t),1);
 x1 = x;
 y1 = z;
 z1 = y;
-
+ 
 plot3(x,y,z,'ro-');
 
 A = [x';y';z';t'];
