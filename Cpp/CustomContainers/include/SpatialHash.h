@@ -1,12 +1,40 @@
 #pragma once
 #include <Eigen/Core>
-class SpatialHash{
-    double cellSize;
-    double invGridSpacing;
 
-    SpatialHash(){
-        
+class SpatialHash{
+
+    double spacing;
+    int tableSize;
+    Eigen::VectorXi cellStart;
+    Eigen::VectorXi cellEntries;
+    Eigen::VectorXi cellEntries;
+
+
+    SpatialHash(double spacing, int maxObjects){
+        tableSize = 2*maxObjects;
+        spacing = spacing;
+        cellStart = Eigen::VectorXi::Zeros(tableSize + 1);
+        cellEntries = Eigen::VectorXi::Zeros(maxObjects);
+        queryIds = Eigen::VectorXi::Zeros(maxObjects);
+        querySize = 0;
     }
+
+    int hashCoords(int xi, int yi, int zi){
+        int h = (ix * 92837111) ^ (iy * 689287499) ^ (iz * 83492791);
+        return abs(h) % this->tableSize;
+    }
+
+    int intCoord(int coord){
+        return floor(coord/this->spacing);
+    }
+
+    int hashPos(Eigen::Vector3d pos, nr) {
+    return this.hashCoords(
+    this.intCoord(pos[3 * nr]), 
+    this.intCoord(pos[3 * nr + 1]),
+    this.intCoord(pos[3 * nr + 2]));
+    }
+
 
     //64 bit return value should help
     inline size_t hash(Eigen::Vector3d &p, float invGridSpacing, const int n) {

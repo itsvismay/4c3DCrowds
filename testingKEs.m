@@ -2,7 +2,7 @@
 
 %% Construct agent curves
 revolutions = 0.5;
-nodes = 40;
+nodes = 10;
 theta = linspace(0, 2*pi*revolutions, nodes)';
 
 t = linspace(0,10, nodes)';
